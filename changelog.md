@@ -3,6 +3,27 @@
 ## Version 7
 
 ### 7.0.8
+- Adding Route `getAutomatedModel`
+        - Available since HDP 4.2.6
+        - GET "/projects/{project_ID}/automodels/{model_ID}"
+
+- Adding Route `getAutomatedModels`
+        - Available since HDP 4.2.6
+        - GET "/projects/{project_ID}/automodels"
+
+- Adding Route `createAutomatedModel`
+        - Available since HDP 4.2.6
+        - POST "/projects/{project_ID}/automodels/create"
+
+- Adding Route `renameAutomatedModel`
+        - Available since HDP 4.2.6
+        - POST "/projects/{project_ID}/automodels/{model_ID}/rename"
+
+- Adding Route `publishAutomatedModel`
+        - Available since HDP 4.2.6
+        - POST "/projects/{project_ID}/automodels/{model_ID}/publish"
+
+### 7.0.7
 - Using string delimiters when creating datasets in mongo
 
 ### 7.0.6
