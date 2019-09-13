@@ -28,7 +28,6 @@ class DatasetFactory:
                metadata_file_path=None, discreteDict_file_path=None, keepVariableName=None):
         """
         Create a Dataset from a file (csv, Excel)
-
         Args:
             name (str): The name of the dataset
             file_path (str): The origin path of the file
@@ -40,7 +39,6 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables, default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
-
         Returns:
             Dataset
         """
@@ -157,7 +155,6 @@ class DatasetFactory:
                               metadata=None, discreteDict=None, keepVariableName=None):
         """
         Create a Dataset from a Pandas DataFrame
-
         Args:
             name (str): The name of the dataset
             dataframe (pandas.DataFrame): The dataframe to import
@@ -165,7 +162,6 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables ,default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
-
         Returns:
             Dataset
         """
@@ -177,7 +173,8 @@ class DatasetFactory:
         SEPARATOR = "semicolon"
         ENCODING = "utf-8"
 
-        stream_df = io.StringIO(dataframe.to_csv(sep=SEPARATOR, index=False))
+        sep = self.char_delimiters[self.string_delimiters.index(SEPARATOR)]
+        stream_df = io.StringIO(dataframe.to_csv(sep=sep, index=False))
         if metadata:
             import json
             stream_metadata = io.StringIO()
@@ -246,7 +243,6 @@ class DatasetFactory:
         """
         Create a Dataset from a sql database.
         Supported systems : PostgreSql
-
         Args:
             name (str): The name of the dataset
             connection_string (str): The connection string to the database (format : 'postgresql://username:password@host:port/database')
@@ -255,7 +251,6 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables, default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
-
         Returns:
             Dataset
         """
@@ -294,7 +289,6 @@ class DatasetFactory:
     def filter(self):
         """
         Get all datasets. Returns a list of datasets in the selected project.
-
         Returns:
             list of Dataset
         """
@@ -305,10 +299,8 @@ class DatasetFactory:
     def get(self, name):
         """
         Returns a dataset found by name or None if no match.
-
         Args:
             name (str): The name of the dataset
-
         Returns:
             Dataset or None
         """
@@ -321,10 +313,8 @@ class DatasetFactory:
     def get_by_id(self, id):
         """
         Returns a dataset found by ID or None if no match.
-
         Args:
             id (str): The ID of the dataset
-
         Returns:
             Dataset or None
         """
@@ -335,7 +325,6 @@ class DatasetFactory:
     def get_default(self):
         """
         Returns the default dataset in this project.
-
         Returns:
             Dataset
         """
@@ -353,7 +342,6 @@ class DatasetFactory:
                       description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95):
         """
         Returns an existing dataset matching the given name. If no match, create a new dataset from a file (csv, Excel).
-
         Args:
             name (str): The name of the dataset
             file_path (str): The origin path of the file
@@ -365,7 +353,6 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables, default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
-
         Returns:
             Dataset
         """
@@ -412,7 +399,6 @@ class Dataset(Base):
     def Variable(self):
         """
         This object includes utilities for retrieving and interacting with variables on this dataset.
-
         Returns:
             An object of type VariableFactory
         """
@@ -423,7 +409,6 @@ class Dataset(Base):
     def _json(self):
         """
         This object includes utilities for retrieving and interacting with variables on this dataset.
-
         Returns:
             An object of type VariableFactory
         """
@@ -535,7 +520,6 @@ class Dataset(Base):
               train_dataset_desc=None, test_dataset_name=None, test_dataset_desc=None):
         """
         Split the dataset into two subsets for training and testing models.
-
         Args:
             train_ratio (float): ratio between training set size and original data set size
             random_state (int): seed used by the random number generator
@@ -545,7 +529,6 @@ class Dataset(Base):
             train_dataset_desc (str): description of the training set
             test_dataset_name (str): name of the test set
             test_dataset_desc (str): description of the test set
-
         Returns:
             The new training and test datasets
         """
@@ -634,7 +617,6 @@ class Dataset(Base):
     def export_csv(self, path):
         """
         Export the dataset to a csv file
-
         Args:
             path (str): The destination path for the resulting csv
         """
@@ -646,7 +628,6 @@ class Dataset(Base):
     def export_dataframe(self):
         """
         Export the dataset to a Pandas DataFrame
-
         Returns:
             DataFrame
         """
@@ -684,7 +665,6 @@ class Dataset(Base):
                          continuous_threshold=0.95, missing_threshold=0.95):
         '''
         Create a new dataset from a dataframe with the same encoding than the current dataset
-
         Args:
             name (str): The name of the dataset
             dataframe (pandas.DataFrame): The dataframe to import
@@ -709,6 +689,6 @@ class Dataset(Base):
         discreteDict = self.get_discreteDict()
         dataset = DatasetFactory(self.__api, self.project_id).create_from_dataframe(name, dataframe,  
                     description=description, modalities=modalities,  
-                    continuous_threshold=continuous_threshold, missing_threshold=missing_threshold, 
+                   continuous_threshold=continuous_threshold, missing_threshold=missing_threshold, 
                     metadata=metadata, discreteDict=discreteDict, keepVariableName=keepVariableName)
         return dataset

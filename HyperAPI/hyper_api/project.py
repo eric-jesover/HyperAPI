@@ -3,6 +3,7 @@ from HyperAPI.hyper_api.target import TargetFactory
 from HyperAPI.hyper_api.base import Base
 from HyperAPI.util import Helper
 from HyperAPI.hyper_api.model import ModelFactory
+from HyperAPI.hyper_api.automatedmodel import AutomatedModelFactory
 from HyperAPI.hyper_api.ruleset import RulesetFactory
 from HyperAPI.hyper_api.xray import XrayFactory
 
@@ -185,6 +186,16 @@ class Project(Base):
             An object of type ModelFactory
         """
         return ModelFactory(self.__api, self.project_id)
+    
+    @property
+    def AutomatedModel(self):
+        """
+        This object includes utilities for creating and retrieving existing models in this project.
+
+        Returns:
+            An object of type ModelFactory
+        """
+        return AutomatedModelFactory(self.__api, self.project_id)
 
     @property
     def Xray(self):
