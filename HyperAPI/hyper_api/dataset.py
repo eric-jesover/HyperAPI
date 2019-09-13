@@ -177,7 +177,8 @@ class DatasetFactory:
         SEPARATOR = "semicolon"
         ENCODING = "utf-8"
 
-        stream_df = io.StringIO(dataframe.to_csv(sep=SEPARATOR, index=False))
+        sep = self.char_delimiters[self.string_delimiters.index(SEPARATOR)]
+        stream_df = io.StringIO(dataframe.to_csv(sep=sep, index=False))
         if metadata:
             import json
             stream_metadata = io.StringIO()
@@ -684,7 +685,6 @@ class Dataset(Base):
                          continuous_threshold=0.95, missing_threshold=0.95):
         '''
         Create a new dataset from a dataframe with the same encoding than the current dataset
-
         Args:
             name (str): The name of the dataset
             dataframe (pandas.DataFrame): The dataframe to import
@@ -709,6 +709,6 @@ class Dataset(Base):
         discreteDict = self.get_discreteDict()
         dataset = DatasetFactory(self.__api, self.project_id).create_from_dataframe(name, dataframe,  
                     description=description, modalities=modalities,  
-                    continuous_threshold=continuous_threshold, missing_threshold=missing_threshold, 
+                   continuous_threshold=continuous_threshold, missing_threshold=missing_threshold, 
                     metadata=metadata, discreteDict=discreteDict, keepVariableName=keepVariableName)
         return dataset

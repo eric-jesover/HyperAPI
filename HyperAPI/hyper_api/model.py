@@ -19,10 +19,12 @@ class AlgoTypes:
     XGBREGRESSOR = 'XGBRegressor'
     LASSO = 'Lasso'
     PERCEPTRON = 'Perceptron'
+    TIMESERIESFORECASTER= 'TimeSeriesForecaster' 
+
     LIST = [HYPERCUBE, LOGISTICREGRESSION, DECISIONTREE, RANDOMFOREST,
             GRADIENTBOOSTING, GRADIENTBOOSTINGREGRESSOR, XGBREGRESSOR,
-            LASSO, PERCEPTRON]
-    REGRESSORLIST = [GRADIENTBOOSTINGREGRESSOR, XGBREGRESSOR, LASSO]
+            LASSO, PERCEPTRON, TIMESERIESFORECASTER]
+    REGRESSORLIST = [GRADIENTBOOSTINGREGRESSOR, XGBREGRESSOR, LASSO, TIMESERIESFORECASTER]
 
 
 class Curves:
@@ -455,7 +457,7 @@ class ModelFactory:
         try:
             self.__api.handle_work_states(dataset.project_id, work_type=json_returned.get('type'), work_id=json_returned.get('_id'))
         except Exception as E:
-            raise ApiException('Unable to create the model ' + params.modelName, str(E))
+            raise ApiException('Unable to create the model ' + params.get('modelName'), str(E))
 
         if params['algoType'] in AlgoTypes.REGRESSORLIST:
             return RegressorModel(self.__api, json_returned)
@@ -781,6 +783,150 @@ class ModelFactory:
             'discretizations': discretizations,
         }
         return self.__create_skModel(dataset, target, params)
+
+
+    @Helper.try_catch
+    def create_TimeSeriesForecaster(self, dataset, name, target, freq='1T', seasonalities_choice=[], targets_to_enrich='', targets_history=[],
+                                    n_lags_max="", lags_to_include=[], one_hot_encode_seasons=False, remove_seasons =False, dropna=False,
+                                    scaler_target='', scaler_X_var='', grid_search=False, rolling_enrich_features=[], test_ratio=0.3, 
+                                    enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median', 
+                                    regressor= { "model_name":"elasticNet",
+                                   "params": {"l1_ratio": [.1, .5, .7, .9, .95, .99, .995, 1],
+                                        "eps": 0.001, "n_alphas": 100, "fit_intercept": True,
+                                        "normalize": True, "precompute": 'auto', "max_iter": 2000,
+                                        "tol": 0.0001, "cv": 5, "copy_X": True, "verbose": 0,
+                                        "n_jobs": -1, "positive": False, "random_state": None, "selection": 'cyclic'}
+                                 }, deseason_signal=False, detrend_signal=False):
+        """
+        Create a Time Series forecasting model based on regressor
+
+        Args:
+            dataset (Dataset): Dataset the model is fitted on
+            name (str): Name of the new model
+            target (Target): Target used to generate the model
+            freq (str): Frequency of the time series
+            seasonalities_choice (list): possible seasonalities to consider
+            targets_history (list): variables to consider when adding lags
+            n_lags_max (int): maximum lags to include
+            lags_to_include (list): specific lags to include
+            one_hot_encode_seasons (bool): One hot encode the seasonalities [categorical features]
+            remove_seasons (bool): remove seasonalities for features
+            dropna (bool): remove NaNs values
+            scaler_target (str): name of scaler for time series
+            scaler_X_var (str): name of scaler for X values (features)
+            grid_search (bool): apply grid search for XGboost Regressor
+            rolling_enrich_features (list): features to include additional rolling statistics
+            test_ratio (float): test size 
+            regressor (dict): defines the regressor algorithm to use and its hyperparameters
+            deseason_signal (bool)
+            detrend_signal (bool)
+            example:
+
+                Three possible algorithms [ XGBOOST, LSTM and ElaticNet]
+                "regressor":{
+                    "model_name":"lstm", "params":{"n_units": 100, "activation": "tanh",
+                    "dropout": 0.4, "return_sequences": true,
+                    "loss": "mae", "metrics": "mse", "optimizer_name": "sgd",
+                    "optimizer_params": {"lr": 0.01, "decay": 1e-6, "momentum": 0.9, "nesterov": true},
+                    "callbacks": {"monitor": "val_loss", "mode": "min", "patience": 5},
+                    "epochs": 100, "batch_size": 128, "validation_split": 0.3,
+                    "shuffle": false, "verbose": 0}
+                                    }
+
+                    "elasticNet_params" : { "model_name":"elasticNet",
+                                   "params": {"l1_ratio": [.1, .5, .7, .9, .95, .99, .995, 1],
+                                        "eps": 0.001, "n_alphas": 100, "fit_intercept": True,
+                                        "normalize": True, "precompute": 'auto', "max_iter": 2000,
+                                        "tol": 0.0001, "cv": 5, "copy_X": True, "verbose": 0,
+                                        "n_jobs": -1, "positive": False, "random_state": None, "selection": 'cyclic'}
+                                 }
+
+
+                    "xgboost_params" ={'target_name': target_name,
+                     'freq':freq, 
+                     'seasonalities_choice':seasons_choice,
+                     'targets_to_enrich': targets_in, 
+                     'targets_history': targets_history_in,
+                     'n_lags_max': n_lags_maxi,
+                     'lags_to_include':lags_to_include_in,  
+                     'one_hot_encode_seasons': one_hot_encode_seasons,
+                     'remove_seasons':remove_seasons,
+                     'dropna':dropna,
+                     'scaler_target':scaler_target,
+                     'scaler_X_var':scaler_X_var,
+                     
+                     'rolling_enrich_features':rolling_enrich_features,
+                    
+                    'grid_search':grid_search,
+                    "regressor": { "model_name":"xgboost",
+                                   "params": {
+                                        "xgb_model_params":{
+                                            "n_estimators": 200,
+                                            "max_depth": 3,
+                                            "learning_rate": 0.05},
+                                       "grid_params":{
+                                            "max_depth": [3, 5, 7],
+                                            "n_estimators": [100, 150, 200],
+                                            "learning_rate": [0.1, 0.05, 0.01, 0.2]
+                                               }
+                                             }
+                                 }
+                    }
+
+
+
+            enable_custom_discretizations (boolean): when ticked use the custom discretization(s) link to the selected dataset. Default is True
+            nbMaxModality (int): Maximum number of modalities per variable. Default is 50
+            nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
+            replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Median'
+            
+        Returns:
+            the created model
+        """
+        # case empty regressor entry
+        try: 
+            assert(len(regressor)!=0)
+        except Exception as E:
+            print('You have inserted an empty Regressor choice')
+            return E
+        
+        target_name = target.name
+        targets_history.append(target_name)
+        hyperParameters = { 
+                "target_name": target_name,
+                "freq": freq,
+                "seasonalities_choice": seasonalities_choice,
+                "targets_to_enrich": targets_to_enrich,
+                "targets_history": targets_history,
+                "n_lags_max": n_lags_max,
+                "lags_to_include": lags_to_include,
+                "one_hot_encode_seasons": one_hot_encode_seasons,
+                "remove_seasons": remove_seasons,
+                "dropna": dropna,
+                "scaler_target": scaler_target,
+                "scaler_X_var": scaler_X_var,
+                "grid_search": grid_search,
+                "rolling_enrich_features": rolling_enrich_features,
+                "test_ratio": test_ratio,
+                "regressor": regressor,
+                "deseason_signal": deseason_signal,
+                "detrend_signal": detrend_signal
+         }
+        discretizations = {}
+        if enable_custom_discretizations is True:
+            discretizations = dataset._discretizations
+        params = {
+            'nbMaxModality': nbMaxModality,
+            'nbMinObservation': nbMinObservation,
+            'replaceMissingValues': replaceMissingValues,
+            'paramsSk': dumps(hyperParameters),
+            'algoType': AlgoTypes.TIMESERIESFORECASTER,
+            'modelName': name,
+            'enable_custom_discretizations': enable_custom_discretizations,
+            'discretizations': discretizations,
+        }
+        return self.__create_skModel(dataset, target, params)
+
 
 class Model(Base):
     """

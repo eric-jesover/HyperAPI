@@ -166,7 +166,6 @@ class Router(object):
             if work is None:
                 return None
             return work.get('_status', {}).get('kind', None)
-
         work_data = {'projectId': project_id}
         if work_type is not None and query is not None:
             work_data['type'] = work_type

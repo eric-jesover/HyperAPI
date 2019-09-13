@@ -2,6 +2,9 @@
 
 ## Version 7
 
+### 7.0.9 
+- Adding Time Series Forecasting Model
+
 ### 7.0.8
 - Using string delimiters when creating datasets in mongo
 
