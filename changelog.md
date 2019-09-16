@@ -2,6 +2,9 @@
 
 ## Version 7
 
+### 7.0.9 
+- Adding Time Series Forecasting Model
+
 ### 7.0.8
 - Adding Route `getAutomatedModel`
         - Available since HDP 4.2.6
